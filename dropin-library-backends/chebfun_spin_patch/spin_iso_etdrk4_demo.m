@@ -183,16 +183,18 @@ x2 = (0:N2-1)*2*pi/N2; x2(x2>=pi)=x2(x2>=pi)-2*pi; [xs2,ix2]=sort(x2);
 subplot(1,4,2);
 uf_end = real(ifft2(uhf2));
 imagesc(xs2, xs2, uf_end(ix2,ix2)'); axis xy equal tight; caxis([-1 1]); set(gca,'XTick',[],'YTick',[]);
-title(sprintf('(b) 2D sym std (%.2fs, broken)', t_2d_std));
+title(sprintf('(b) 2D std ($T=%g$, %.2fs)', T2, t_2d_std));
+xlabel('symmetry broken','FontSize',7.5);
 
 subplot(1,4,3);
 ui_end = B2_ar.assemble(B2_ar.toPhys(uhi2));
 imagesc(xs2, xs2, ui_end(ix2,ix2)'); axis xy equal tight; caxis([-1 1]); set(gca,'XTick',[],'YTick',[]);
-title(sprintf('(c) 2D sym iso (%.2fs, $D\\equiv0$)', t_2d_ar));
+title(sprintf('(c) 2D iso ($T=%g$, %.2fs)', T2, t_2d_ar));
+xlabel('$D \equiv 0$ bitwise','FontSize',7.5);
 
 subplot(1,4,4);
 imagesc(xs2, xs2, u_ns_t2_end(ix2,ix2)'); axis xy equal tight; caxis([-1 1]); set(gca,'XTick',[],'YTick',[]);
-title(sprintf('(d) 2D non-sym ($\\mathcal T_2$: %.2fx)', t_ns_t2/t_ns_std));
+title(sprintf('(d) 2D non-sym ($T=%.1f$, %.2fx)', n_ns*tau2, t_ns_t2/t_ns_std));
 ex4 = floor(log10(max(err_ns_t2,1e-30))); mt4 = err_ns_t2 / 10^ex4;
 xlabel(sprintf('$\\|u_{\\mathrm{std}}-u_{\\mathrm{iso}}\\|_\\infty=%.1f{\\times}10^{%d}$', mt4, ex4),'FontSize',7.5);
 
