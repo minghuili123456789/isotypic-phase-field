@@ -74,9 +74,13 @@ function W = ar_xform(V, d, M, dir)
 nc = 2^d; W = zeros(size(V),'like',V);
 for c = 0:nc-1
     if d == 1
-        W(:,c+1) = r2r_1d(V(:,c+1), bitget(c,1), M, dir);
+        vc = V(:,c+1);
+        if ~any(vc), continue; end  % exact zero-channel short-circuit (0 -> 0)
+        W(:,c+1) = r2r_1d(vc, bitget(c,1), M, dir);
     else
-        A = r2r_1d(V(:,:,c+1), bitget(c,1), M, dir);
+        vc = V(:,:,c+1);
+        if ~any(vc(:)), continue; end
+        A = r2r_1d(vc, bitget(c,1), M, dir);
         W(:,:,c+1) = r2r_1d(A.', bitget(c,2), M, dir).';
     end
 end
@@ -132,6 +136,7 @@ if dir > 0, W = complex(zeros(size(V))); else, W = zeros(size(V)); end
 for c = 0:nc-1
     if d == 1
         vc = V(:,c+1);
+        if ~any(vc), continue; end
         if bitget(c,1)
             if dir > 0, vc = fft(vc .* tw); else, vc = real(ifft(vc) .* conj(tw)); end
         else
@@ -140,6 +145,7 @@ for c = 0:nc-1
         W(:,c+1) = vc;
     else
         vc = V(:,:,c+1);
+        if ~any(vc(:)), continue; end
         for ax = 1:2
             shp = [1 1]; shp(ax) = M;
             if bitget(c,ax)
@@ -185,12 +191,20 @@ end
 
 function U3 = z2_cube(U, nc)
 sz = size(U); A = reshape(U, [], nc);
+nz = find(any(A ~= 0, 1)) - 1;
 A2 = zeros(size(A),'like',A); A3 = zeros(size(A),'like',A);
-for r = 0:nc-1
-    for a = 0:nc-1, A2(:,r+1) = A2(:,r+1) + A(:,a+1).*A(:,bitxor(a,r)+1); end
+for a = nz
+    for b = nz
+        r = bitxor(a, b);
+        A2(:,r+1) = A2(:,r+1) + A(:,a+1).*A(:,b+1);
+    end
 end
-for s = 0:nc-1
-    for r = 0:nc-1, A3(:,s+1) = A3(:,s+1) + A2(:,r+1).*A(:,bitxor(s,r)+1); end
+nz2 = find(any(A2 ~= 0, 1)) - 1;
+for r = nz2
+    for b = nz
+        s = bitxor(r, b);
+        A3(:,s+1) = A3(:,s+1) + A2(:,r+1).*A(:,b+1);
+    end
 end
 U3 = reshape(A3, sz);
 end
