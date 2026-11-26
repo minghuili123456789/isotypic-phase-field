@@ -44,7 +44,7 @@ See [`experiments/README.md`](experiments/README.md) to reproduce every figure a
 
 Copyright © 2026 **Minghui Li** and **Zixian Liu** (School of Mathematical Sciences, Jiangxi Science and Technology Normal University). All code, algorithms, drop-in backends, and benchmark scripts in this repository are released under the [MIT License](LICENSE), which requires retaining the copyright and license notice in all copies or substantial portions of the software.
 
-**Academic Attribution Requirement:** If you use, adapt, or embed this codebase—or any of its symmetry-channel spectral backends ($A_{\mathrm R}$, $\mathcal{T}_2$, $A_{\mathrm R}\times\mathcal{T}_2$, CF-ISM, or Neumann/Dirichlet half-domain splittings)—in academic research, scientific software, or publications, **please cite our accompanying paper** (also available via GitHub's **"Cite this repository"** button via [`CITATION.cff`](CITATION.cff)):
+**Academic Attribution Requirement:** If you use, adapt, or embed this codebase—or any of its symmetry-channel spectral backends ($`A_{\mathrm R}`$, $`\mathcal{T}_2`$, $`A_{\mathrm R}\times\mathcal{T}_2`$, CF-ISM, or Neumann/Dirichlet half-domain splittings)—in academic research, scientific software, or publications, **please cite our accompanying paper** (also available via GitHub's **"Cite this repository"** button via [`CITATION.cff`](CITATION.cff)):
 
 ```bibtex
 @article{LiLiu2026Isotypic,
