@@ -46,7 +46,7 @@ Copyright © 2026 **Minghui Li** and **Zixian Liu** (School of Mathematical Scie
   title   = {Exact long-time symmetry preservation in phase-field simulations:
              isotypic spectral schemes that are equivariant in floating-point arithmetic},
   year    = {2026},
-  note    = {Submitted to Journal of Computational Physics; code available at
+  note    = {Preprint; code available at
              \url{https://github.com/minghuili123456789/isotypic-phase-field}}
 }
 ```
