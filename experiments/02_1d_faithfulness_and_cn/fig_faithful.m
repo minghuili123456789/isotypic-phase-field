@@ -8,8 +8,11 @@ if ~exist(fullfile(fileparts(mfilename('fullpath')),'..','..','figs'),'dir'), mk
 %  (c) Relative deviation from 120-digit VPA reference in the linear regime
 here = fileparts(mfilename('fullpath')); addpath(here); fig_common;
 L = load(fullfile(here,'..','..','results','exp_delta.mat'));
-load(fullfile(here,'..','..','results','exp_delta_extra.mat'),'extra');
-L.out = [L.out(~cellfun(@(o) strcmp(o.variant,'iso') && o.delta==1e-200, L.out)), {extra}];
+extra_file = fullfile(here,'..','..','results','exp_delta_extra.mat');
+if exist(extra_file,'file')
+    load(extra_file,'extra');
+    L.out = [L.out(~cellfun(@(o) strcmp(o.variant,'iso') && o.delta==1e-200, L.out)), {extra}];
+end
 load(fullfile(here,'..','..','results','ref_vpa.mat'),'ref');
 
 f = figure('Units','centimeters','Position',[2 2 18 5.6]);

@@ -25,7 +25,7 @@ for q = 1:numel(cfg)
         jobs{end+1} = struct('q',q,'v',v{1}); %#ok<SAGROW>
     end
 end
-if isempty(gcp('nocreate')), cl=parcluster('Processes'); cl.NumWorkers=20; parpool(cl,9); end
+try, if isempty(gcp('nocreate')), parpool('local', min(8, feature('numcores'))); end, catch, end
 out = cell(size(jobs));
 parfor j = 1:numel(jobs)
     c = cfg{jobs{j}.q}; v = jobs{j}.v;

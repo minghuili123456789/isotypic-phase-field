@@ -19,7 +19,7 @@ end, end, end
 for Te = [1 5 20], for pr = {'double','single'}
     jobs{end+1} = struct('type','fourier','sch','esp','tau',Te,'del',0,'prec',pr{1},'prm',struct('Ns',24,'Niter',20)); %#ok<SAGROW>
 end, end
-if isempty(gcp('nocreate')), cl=parcluster('Processes'); cl.NumWorkers=20; parpool(cl,8); end
+try, if isempty(gcp('nocreate')), parpool('local', min(8, feature('numcores'))); end, catch, end
 out = cell(size(jobs));
 parfor j = 1:numel(jobs)
     J = jobs{j};

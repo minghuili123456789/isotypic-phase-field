@@ -1,6 +1,7 @@
 function fig_2d(matfile, name, outname, tsel, tmaxD)
 % snapshots (standard vs isotypic) + defect history for a 2D experiment
 here = fileparts(mfilename('fullpath')); addpath(fullfile(here,'..','..','core')); addpath(here); fig_common;
+if ~exist(fullfile(here,'..','..','figs'),'dir'), mkdir(fullfile(here,'..','..','figs')); end
 S = load(fullfile(here,'..','..','results',matfile));
 R = struct;
 for j = 1:numel(S.out)

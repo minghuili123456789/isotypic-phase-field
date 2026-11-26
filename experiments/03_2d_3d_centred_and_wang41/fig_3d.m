@@ -1,6 +1,7 @@
 function fig_3d(matfile, name, outname, tsel)
 % zero-level isosurfaces (standard vs isotypic) and defect histories, 3D
 here = fileparts(mfilename('fullpath')); addpath(fullfile(here,'..','..','core')); addpath(here); fig_common;
+if ~exist(fullfile(here,'..','..','figs'),'dir'), mkdir(fullfile(here,'..','..','figs')); end
 S = load(fullfile(here,'..','..','results',matfile));
 R = struct;
 for j = 1:numel(S.out)

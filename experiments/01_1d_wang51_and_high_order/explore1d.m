@@ -25,7 +25,7 @@ cfg{end+1} = struct('name','w52c_etdrk4','N',512,'eps2',0.1,'gam',1,'S',1,'sch',
 cfg{end+1} = struct('name','w52d_etdrk4','N',512,'eps2',0.001,'gam',1,'S',1,'sch','etdrk4','tau',0.05,'T',5000,'u0',@(x) 0.5*(sin(x)+sin(8*x)),'prm',struct);
 cfg{end+1} = struct('name','w52c_esp','N',512,'eps2',0.1,'gam',1,'S',1,'sch','esp','tau',2,'T',5000,'u0',@(x) 0.5*(sin(x)+sin(4*x)),'prm',struct('Ns',24,'Niter',20));
 cfg{end+1} = struct('name','w52d_esp','N',512,'eps2',0.001,'gam',1,'S',1,'sch','esp','tau',10,'T',5000,'u0',@(x) 0.5*(sin(x)+sin(8*x)),'prm',struct('Ns',24,'Niter',20));
-if isempty(gcp('nocreate')), cl=parcluster('Processes'); cl.NumWorkers=20; parpool(cl,12); end
+try, if isempty(gcp('nocreate')), parpool('local', min(8, feature('numcores'))); end, catch, end
 out = cell(size(cfg));
 parfor q = 1:numel(cfg)
   c = cfg{q};

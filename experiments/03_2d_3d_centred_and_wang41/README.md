@@ -11,3 +11,9 @@ Reproduces **Section 6**, **Tables 2–3**, and **Figures 6–9** of the manuscr
 | `exp2d3d_b.m`, `fig_C2d_slim.m`, `fig_3d.m` | 2D $C_2$ point-symmetric pattern ($N=192$, **Figure 8**) and 3D octant saddle ($N=96$, **Figure 9**) |
 | `exp_log.m` | Non-polynomial Flory–Huggins logarithmic potential in 1D & 2D via Walsh–Hadamard orbit evaluation |
 | `exp_cost.m` | **Table 3**: Wall-clock timing per ETDRK4 step & bitwise identity of full vs. reduced modes |
+
+### Example figure-generation calls
+```matlab
+fig_2d('exp2d3d.mat', 'X2d', 'fig_X2d.pdf', [0 5 10 20 40], 40);
+fig_3d('exp2d3d_b.mat', 'O3d', 'fig_O3d.png', [0 1 3 10]);
+```

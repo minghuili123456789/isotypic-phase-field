@@ -8,7 +8,7 @@ addpath(fileparts(mfilename('fullpath')));
 res = fullfile(fileparts(mfilename('fullpath')),'..','..','results');
 cases = struct('name',{'k1','mk'}, ...
    'N',{128,1024},'eps2',{1,1},'gam',{1,400},'S',{1,800},'tau',{0.05,1e-3}, ...
-   'T',{400,60},'u0',{@(x) sin(x), @(x) 0.5*(sin(x)+sin(4*x))}, ...
+   'T',{500,60},'u0',{@(x) sin(x), @(x) 0.5*(sin(x)+sin(4*x))}, ...
    'pfun',{@(x) ones(size(x)), @(x) cos(x)});
 dl = [10.^-(2:2:30), 1e-50, 1e-100, 1e-200, 0];
 variants = {'iso','fourier','single','filter'};
@@ -16,7 +16,7 @@ jobs = {};
 for c = 1:numel(cases), for v = 1:numel(variants), for k = 1:numel(dl)
    jobs{end+1} = [c v k]; %#ok<SAGROW>
 end, end, end
-if isempty(gcp('nocreate')), cl=parcluster('Processes'); cl.NumWorkers=20; parpool(cl,6); end
+try, if isempty(gcp('nocreate')), parpool('local', min(6, feature('numcores'))); end, catch, end
 out = cell(size(jobs));
 parfor j = 1:numel(jobs)
    c = cases(jobs{j}(1)); v = variants{jobs{j}(2)}; del = dl(jobs{j}(3));
