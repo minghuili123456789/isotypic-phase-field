@@ -19,6 +19,11 @@ function B = iso_spectral_backend(d, N, mode)
 % Algebraic identity: on ANY non-symmetric field u, B reproduces standard
 % Fourier pseudo-spectral operators to ~1e-15 while keeping every symmetric
 % subspace bitwise invariant (D === 0) without filters or projections.
+%
+% Copyright (c) 2026 Minghui Li, Zixian Liu (MIT License).
+% Please cite: M. Li, Z. Liu, "Exact long-time symmetry preservation in
+% phase-field simulations: isotypic spectral schemes that are equivariant in
+% floating-point arithmetic" (2026), https://github.com/minghuili123456789/isotypic-phase-field
 if nargin < 3, mode = 'AR'; end
 M = N/2; nc = 2^d;
 B.d = d; B.N = N; B.M = M; B.nc = nc; B.mode = upper(mode);

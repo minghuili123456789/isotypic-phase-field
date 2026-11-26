@@ -1,0 +1,29 @@
+cff-version: 1.2.0
+message: "If you use this software, drop-in backend, or any part of the algorithms/code in your research, solver, or publication, please cite the accompanying manuscript as below."
+title: "isotypic-phase-field: Non-interventional isotypic spectral backends for exact long-time symmetry preservation in 1D/2D/3D phase-field simulations"
+type: software
+authors:
+  - family-names: Li
+    given-names: Minghui
+    email: minghuili_xmu@163.com
+    affiliation: "School of Mathematical Sciences, Jiangxi Science and Technology Normal University, Nanchang, Jiangxi, China"
+  - family-names: Liu
+    given-names: Zixian
+    affiliation: "School of Mathematical Sciences, Jiangxi Science and Technology Normal University, Nanchang, Jiangxi, China"
+repository-code: "https://github.com/minghuili123456789/isotypic-phase-field"
+url: "https://github.com/minghuili123456789/isotypic-phase-field"
+license: MIT
+year: 2026
+preferred-citation:
+  type: article
+  title: "Exact long-time symmetry preservation in phase-field simulations: isotypic spectral schemes that are equivariant in floating-point arithmetic"
+  authors:
+    - family-names: Li
+      given-names: Minghui
+      email: minghuili_xmu@163.com
+      affiliation: "School of Mathematical Sciences, Jiangxi Science and Technology Normal University, Nanchang, Jiangxi, China"
+    - family-names: Liu
+      given-names: Zixian
+      affiliation: "School of Mathematical Sciences, Jiangxi Science and Technology Normal University, Nanchang, Jiangxi, China"
+  year: 2026
+  notes: "Submitted to Journal of Computational Physics"

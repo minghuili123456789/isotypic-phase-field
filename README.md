@@ -40,5 +40,24 @@ fprintf('Max symmetry defect at T = 1000: %g\n', max(abs(V(:,1)))); % exact 0!
 
 See [`experiments/README.md`](experiments/README.md) to reproduce every figure and table in the paper.
 
+## Intellectual Property & Citation
+
+Copyright © 2026 **Minghui Li** and **Zixian Liu** (School of Mathematical Sciences, Jiangxi Science and Technology Normal University). All code, algorithms, drop-in backends, and benchmark scripts in this repository are released under the [MIT License](LICENSE), which requires retaining the copyright and license notice in all copies or substantial portions of the software.
+
+**Academic Attribution Requirement:** If you use, adapt, or embed this codebase—or any of its symmetry-channel spectral backends ($A_{\mathrm R}$, $\mathcal{T}_2$, $A_{\mathrm R}\times\mathcal{T}_2$, CF-ISM, or Neumann/Dirichlet half-domain splittings)—in academic research, scientific software, or publications, **please cite our accompanying paper** (also available via GitHub's **"Cite this repository"** button via [`CITATION.cff`](CITATION.cff)):
+
+```bibtex
+@article{LiLiu2026Isotypic,
+  author  = {Minghui Li and Zixian Liu},
+  title   = {Exact long-time symmetry preservation in phase-field simulations:
+             isotypic spectral schemes that are equivariant in floating-point arithmetic},
+  year    = {2026},
+  note    = {Submitted to Journal of Computational Physics; code available at
+             \url{https://github.com/minghuili123456789/isotypic-phase-field}}
+}
+```
+
+For inquiries regarding reuse, collaboration, or licensing, please contact the corresponding author: **Minghui Li** (`minghuili_xmu@163.com`).
+
 ## License
 MIT License — see [`LICENSE`](LICENSE).

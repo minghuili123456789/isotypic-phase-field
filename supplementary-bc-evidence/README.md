@@ -33,3 +33,20 @@ Standard 2D DCT-I (and zero-mode suppression!) dissolves the negative quadrants 
 Even with **no constant ($k=0$) mode**, the unstable midpoint-even mode $\sin(x)$ ($\lambda_\perp = 1-\kappa^2 = 0.75$) causes standard DST-I integrators to collapse into a single-sign arch by $T_\ast = 49$, while our 2-channel isotypic Dirichlet backend maintains $D \equiv 0$ bitwise:
 
 ![1D Homogeneous Dirichlet Comparison](fig_dirichlet_1d.png)
+
+---
+
+## Intellectual Property & Citation
+
+Copyright © 2026 **Minghui Li** and **Zixian Liu** (School of Mathematical Sciences, Jiangxi Science and Technology Normal University), released under the [MIT License](../LICENSE). If you reuse or adapt these Neumann/Dirichlet symmetry-channel scripts, algorithms, or comparison benchmarks in your research or publications, **please retain the copyright notice and cite our paper**:
+
+```bibtex
+@article{LiLiu2026Isotypic,
+  author  = {Minghui Li and Zixian Liu},
+  title   = {Exact long-time symmetry preservation in phase-field simulations:
+             isotypic spectral schemes that are equivariant in floating-point arithmetic},
+  year    = {2026},
+  note    = {Submitted to Journal of Computational Physics; code available at
+             \url{https://github.com/minghuili123456789/isotypic-phase-field}}
+}
+```

@@ -35,3 +35,22 @@ Changing only 3 lines in the `ode15s` RHS prevents the $T_\ast = 27$ collapse (~
 Exact same Cox–Matthews ETDRK4 time stepper on 1D symmetric ($T=200$), 2D symmetric X-junction ($N=256$, ~2x faster!), and a classic 2D non-symmetric spinodal coarsening benchmark ($N=256$, all 4 channels active, `1.08x` cost and `3.5e-14` agreement):
 
 ![Chebfun spin/spin2 Drop-In Comparison](chebfun_spin_patch/fig_demo_chebfun_spin.png)
+
+---
+
+## Intellectual Property & Citation
+
+Copyright © 2026 **Minghui Li** and **Zixian Liu** (School of Mathematical Sciences, Jiangxi Science and Technology Normal University), released under the [MIT License](../LICENSE).
+
+All drop-in backend modules (`iso_spectral_backend.m`, `isotypic_spectral.py`, Dedalus v3 / Shenfun / Chebfun recipes) are freely usable in academic and open-source solvers provided that the original copyright notice is retained. **If you embed or adapt any of these backends in your code, toolbox, or paper, please cite our accompanying manuscript**:
+
+```bibtex
+@article{LiLiu2026Isotypic,
+  author  = {Minghui Li and Zixian Liu},
+  title   = {Exact long-time symmetry preservation in phase-field simulations:
+             isotypic spectral schemes that are equivariant in floating-point arithmetic},
+  year    = {2026},
+  note    = {Submitted to Journal of Computational Physics; code available at
+             \url{https://github.com/minghuili123456789/isotypic-phase-field}}
+}
+```

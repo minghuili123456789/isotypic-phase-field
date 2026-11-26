@@ -11,6 +11,11 @@ Supports:
 Algebraic identity: on arbitrary non-symmetric data, every operator matches
 standard NumPy/SciPy Fourier pseudo-spectral operators to ~1e-15 while keeping
 every symmetric subspace bitwise invariant (D === 0) without filters or resets.
+
+Copyright (c) 2026 Minghui Li, Zixian Liu (MIT License).
+Please cite: M. Li, Z. Liu, "Exact long-time symmetry preservation in
+phase-field simulations: isotypic spectral schemes that are equivariant in
+floating-point arithmetic" (2026), https://github.com/minghuili123456789/isotypic-phase-field
 """
 import numpy as np
 from scipy.fft import dct, dst, fft, ifft

@@ -12,3 +12,6 @@ Reusable MATLAB implementation of the non-interventional isotypic spectral backe
 | `cf_gauge_init.m` | Canonical-Frame Isotypic Spectral Method (CF-ISM, Algorithm 2): 1-FFT circular auto-convolution + $d_0$-digit alias-free Gauss–Newton gauge polish at $t=0$ |
 | `sp_integrator.m`, `sp_run.m` | Shared time-stepping drivers (`imex1`, `etdrk2`, `etdrk4`, `cn`, `esp`, `zmode`) |
 | `fig_common.m` | Unified LaTeX figure styling defaults |
+
+## Intellectual Property & Citation
+Copyright © 2026 **Minghui Li** and **Zixian Liu** (MIT License; see [`../LICENSE`](../LICENSE)). When using or embedding any file from `core/` in research or software, please retain the copyright header and cite our paper (see [`../CITATION.cff`](../CITATION.cff) or the BibTeX entry in [`../README.md`](../README.md)).
