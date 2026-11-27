@@ -78,7 +78,7 @@ fprintf('  2D CAC X-junction (N=%d, T=%g): std T*=%.3f (maxD=%.2e, max|mean|=%.2
 fprintf('\n=== (3) Drop-in 2D Cahn-Hilliard (4th-order) on odd-odd X-junction (N=192) ===\n');
 % du/dt = -Delta(eps^2 Delta u + u - u^3) = -eps^2 Delta^2 u - Delta(u - u^3)
 % Stabilized ETDRK2: L_k = eps^2 |k|^4 + S |k|^2, N_k(u) = |k|^2 * F[ (1+S)u - u^3 ]
-Nch = 192; eps_ch = 0.08; tau_ch = 1e-4; T_ch = 0.05; nst_ch = round(T_ch/tau_ch);
+Nch = 192; eps_ch = 0.1; tau_ch = 5e-4; T_ch = 1.0; nst_ch = round(T_ch/tau_ch);
 S_ch = 2;
 Pf_ch = sp_setup(struct('d',2,'N',Nch,'eps2',eps_ch^2,'gam',1,'S',S_ch,'rep','fourier'));
 Pi_ch = sp_setup(struct('d',2,'N',Nch,'eps2',eps_ch^2,'gam',1,'S',S_ch,'rep','iso'));
@@ -91,31 +91,32 @@ Oi_ch.N = @(uh) Pi_ch.K2 .* Oi_ch.toSpec((1+S_ch)*Oi_ch.toPhys(uh) - Oi_ch.cube(
 If_ch = sp_integrator(Pf_ch, Of_ch, 'etdrk2', tau_ch);
 Ii_ch = sp_integrator(Pi_ch, Oi_ch, 'etdrk2', tau_ch);
 
-% 3a. Non-symmetric CH equivalence check (N=32, 20 steps)
+% 3a. Non-symmetric CH equivalence check (N=32, 20 steps, tau = 5e-4)
 Pfc_t = sp_setup(struct('d',2,'N',32,'eps2',eps_ch^2,'gam',1,'S',S_ch,'rep','fourier'));
 Pic_t = sp_setup(struct('d',2,'N',32,'eps2',eps_ch^2,'gam',1,'S',S_ch,'rep','iso'));
 Pfc_t.Lk = eps_ch^2*Pfc_t.K2.^2 + S_ch*Pfc_t.K2; Pic_t.Lk = eps_ch^2*Pic_t.K2.^2 + S_ch*Pic_t.K2;
 Ofc_t = sp_ops(Pfc_t); Oic_t = sp_ops(Pic_t);
 Ofc_t.N = @(uh) Pfc_t.K2 .* Ofc_t.toSpec((1+S_ch)*Ofc_t.toPhys(uh) - Ofc_t.toPhys(uh).^3);
 Oic_t.N = @(uh) Pic_t.K2 .* Oic_t.toSpec((1+S_ch)*Oic_t.toPhys(uh) - Oic_t.cube(Oic_t.toPhys(uh)));
-Ifc_t = sp_integrator(Pfc_t, Ofc_t, 'etdrk2', 1e-4);
-Iic_t = sp_integrator(Pic_t, Oic_t, 'etdrk2', 1e-4);
+Ifc_t = sp_integrator(Pfc_t, Ofc_t, 'etdrk2', tau_ch);
+Iic_t = sp_integrator(Pic_t, Oic_t, 'etdrk2', tau_ch);
 rng(7); u_ch_ns = 0.3*randn(32,32);
 uh1 = Ofc_t.toSpec(u_ch_ns); uh2 = Oic_t.toSpec(sp_channels(u_ch_ns, Pfc_t));
 for n = 1:20, uh1 = Ifc_t.step(uh1); uh2 = Iic_t.step(uh2); end
 eq_ch = max(abs(Ofc_t.toPhys(uh1) - sp_assemble(Oic_t.toPhys(uh2), 2, 16)),[],'all');
-fprintf('  2D CH non-symmetric equivalence (20 steps): %.2e\n', eq_ch);
+fprintf('  2D CH non-symmetric equivalence (N=32, 20 steps, tau=%.1e): %.2e\n', tau_ch, eq_ch);
 
-% 3b. Symmetry test on 2D odd-odd X-junction (N=192)
+% 3b. Symmetry test on 2D odd-odd X-junction (N=192, eps=0.1, tau=5e-4, T=1.0)
 U0_ch = sp_init(Pi_ch, @(x,y) tanh(sin(x).*sin(y)/(sqrt(2)*eps_ch)));
 u0_ch = sp_assemble(U0_ch, 2, Nch/2);
 uhf = Of_ch.toSpec(u0_ch); uhi = Oi_ch.toSpec(U0_ch);
-maxD_ch_std = 0; maxD_ch_iso = 0; tb_ch_std = NaN;
+maxD_ch_std = 0; maxD_ch_iso = 0; tb_ch_std = NaN; D_ch_step1 = 0;
 for n = 1:nst_ch
     uhf = If_ch.step(uhf); uhi = Ii_ch.step(uhi);
-    if mod(n, 25) == 0
+    if n == 1 || mod(n, 25) == 0
         uf = Of_ch.toPhys(uhf); Uc = sp_channels(uf, Pf_ch);
         Df = max(abs(Uc(:,:,[1 2 3])),[],'all');
+        if n == 1, D_ch_step1 = Df; end
         maxD_ch_std = max(maxD_ch_std, Df);
         if isnan(tb_ch_std) && Df > 1e-2, tb_ch_std = n*tau_ch; end
         Vi = Oi_ch.toPhys(uhi);
@@ -123,13 +124,13 @@ for n = 1:nst_ch
         maxD_ch_iso = max(maxD_ch_iso, Di);
     end
 end
-fprintf('  2D CH odd-odd (N=%d, T=%g): std maxD=%.2e (T*=%g) | iso maxD=%g\n', ...
-    Nch, T_ch, maxD_ch_std, tb_ch_std, maxD_ch_iso);
+fprintf('  2D CH odd-odd (N=%d, eps=%g, tau=%.1e, T=%g): std D(step1)=%.2e, maxD=%.2e (T*=%g) | iso maxD=%g\n', ...
+    Nch, eps_ch, tau_ch, T_ch, D_ch_step1, maxD_ch_std, tb_ch_std, maxD_ch_iso);
 
 save(fullfile(res,'exp_extensibility.mat'), 'eq_sav','tb_sav_std','maxD_sav_std','tb_sav_iso','maxD_sav_iso', ...
     'tb_sav_sh_std','maxD_sav_sh_std','tb_sav_sh_t2','maxD_sav_sh_t2', ...
     'tb_cac_std','maxD_cac_std','maxMean_cac','maxD_cac_iso', ...
-    'eq_ch','maxD_ch_std','tb_ch_std','maxD_ch_iso');
+    'eq_ch','D_ch_step1','maxD_ch_std','tb_ch_std','maxD_ch_iso','eps_ch','tau_ch','T_ch');
 fprintf('Saved exp_extensibility.mat\n');
 
 % =========================================================================
