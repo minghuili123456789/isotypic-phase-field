@@ -34,6 +34,22 @@ for d = 1:3
     fprintf('  d=%d N=%2d: |half-grid iso - Fourier| = %.2e\n', d, N, max(abs(u_hg(:)-u_ref(:))));
 end
 
+fprintf('\n=== (1b) T2 wavenumber-parity equivalence in 1D/2D/3D (non-symmetric data) ===\n');
+for d = 1:3
+    Nt = [128 64 32]; Nt = Nt(d); h = 2*pi/Nt; x1 = (0:Nt-1)'*h;
+    switch d
+        case 1, fun = @(x) 0.5*sin(x) + 0.3*cos(2*x) + 0.2*sin(3*x + 0.4); u_f = fun(x1);
+        case 2, fun = @(x,y) sin(x).*cos(y) + 0.3*cos(2*x+y) + 0.2*sin(x-3*y); [X,Y]=ndgrid(x1,x1); u_f = fun(X,Y);
+        case 3, fun = @(x,y,z) sin(x).*cos(y).*sin(z) + 0.3*cos(2*x+y-z); [X,Y,Z]=ndgrid(x1,x1,x1); u_f = fun(X,Y,Z);
+    end
+    Pt = sp_t2_setup(struct('d',d,'N',Nt,'eps2',1,'gam',1,'S',0)); Ot = sp_t2_ops(Pt);
+    Ut = sp_t2_init(Pt, fun);
+    u_t2 = sp_t2_assemble(Ot.toPhys(exp(-0.1*Pt.K2).*Ot.toSpec(Ut)), d, Nt/2);
+    Pf = sp_setup(struct('d',d,'N',Nt,'eps2',1,'gam',1,'S',0,'rep','fourier')); Of = sp_ops(Pf);
+    u_ref = Of.toPhys(exp(-0.1*Pf.K2).*Of.toSpec(u_f));
+    fprintf('  d=%d N=%3d: |T2 iso - Fourier| = %.2e\n', d, Nt, max(abs(u_t2(:)-u_ref(:))));
+end
+
 fprintf('\n=== (2) CF-ISM with Gauss-Newton gauge on mixed-harmonic shifted data ===\n');
 % Test all shifts: 0, pi/8, pi/4, pi/128 (half-grid), and 0.37123456789 (irrational)
 N = 128; M = N/2; h = 2*pi/N;
@@ -106,15 +122,23 @@ fprintf('  2D shifted odd-odd: c_err=(%.1e, %.1e), init forbidden max=%g\n', ...
     double(min(abs(mod(c2(1)+vpa(sh1)+vpa(pi)/2,vpa(pi))-vpa(pi)/2))), ...
     double(min(abs(mod(c2(2)+vpa(sh2)+vpa(pi)/2,vpa(pi))-vpa(pi)/2))), ...
     max(abs(reshape(U2_0(:,:,1:3),[],1))));
-% 2D shifted C2 point-odd (draft Eq 5.8 shifted by irrational sh1, sh2!)
+% 2D shifted C2 point-odd (companion benchmark shifted by off-grid sh1, sh2!)
+% Note: sin((x+sh1) + 2.5*sin(3*(y+sh2))) has C2 centres at x+sh1 = m*pi, y+sh2 = n*pi/3!
 ep = 0.05;
 fc2_d = @(x,y) tanh(sin((x+sh1) + 2.5*sin(3*(y+sh2)))/(sqrt(2)*ep));
 fc2_v = @(x,y) tanh(sin((x+vpa(sh1)) + vpa(2.5)*sin(3*(y+vpa(sh2))))/(sqrt(vpa(2))*vpa(ep)));
-[cc2, Uc2_0] = cf_init_2d_pt(fc2_d, fc2_v, N2, 34);
-fprintf('  2D shifted C2 (draft 5.8): c_err=(%.1e, %.1e), init forbidden (ee,oo) max=%g\n', ...
+[cc2, Uc2_0] = cf_init_2d_pt(fc2_d, fc2_v, N2, 320);
+Pc2 = sp_setup(struct('d',2,'N',N2,'eps2',1,'gam',1/ep^2,'S',2/ep^2,'rep','iso'));
+Oc2 = sp_ops(Pc2); Ic2 = sp_integrator(Pc2, Oc2, 'etdrk2', 2e-3);
+vhc = Oc2.toSpec(Uc2_0); maxDc2 = max([max(abs(Uc2_0(:,:,1)),[],'all'), max(abs(Uc2_0(:,:,4)),[],'all')]);
+for n = 1:200
+    vhc = Ic2.step(vhc); Vc = Oc2.toPhys(vhc);
+    maxDc2 = max(maxDc2, max([max(abs(Vc(:,:,1)),[],'all'), max(abs(Vc(:,:,4)),[],'all')]));
+end
+fprintf('  2D shifted C2 (d0=320, 200 ETDRK2 steps): c_err=(%.1e, %.1e mod pi/3), init=(ee,oo)=%g, maxD=%g\n', ...
     double(min(abs(mod(cc2(1)+vpa(sh1)+vpa(pi)/2,vpa(pi))-vpa(pi)/2))), ...
-    double(min(abs(mod(cc2(2)+vpa(sh2)+vpa(pi)/2,vpa(pi))-vpa(pi)/2))), ...
-    max([max(abs(reshape(Uc2_0(:,:,1),[],1))), max(abs(reshape(Uc2_0(:,:,4),[],1)))]));
+    double(min(abs(mod(cc2(2)+vpa(sh2)+vpa(pi)/6,vpa(pi)/3)-vpa(pi)/6))), ...
+    max([max(abs(Uc2_0(:,:,1)),[],'all'), max(abs(Uc2_0(:,:,4)),[],'all')]), maxDc2);
 
 % -------- Helper functions --------
 function [c_q, U0] = cf_init_1d(f_dbl, f_vpa, N, dig)

@@ -26,17 +26,19 @@ xlabel('$t=0$ precision $d_0$ (double for $t>0$)');
 ylabel('$T_\ast$ ($D>10^{-2}$)');
 legend({'CF-ISM ($T_\ast < \infty$)', sprintf('fit: slope $%.3f \\approx \\ln 10$', pp(1)), ...
     'CF-ISM ($d_0=320$, $D\equiv0$)'}, 'Position',[0.23 0.26 0.21 0.17], 'FontSize', 6.5);
-title('(a) CF-ISM horizon law (irrational shift)', 'FontSize', 8.5);
+title('(a) CF-ISM horizon law (off-grid shift)', 'FontSize', 8.5);
 
 % (b) Initial transverse defect vs d0 (log10 scale so underflow at 0 is cleanly shown)
 subplot(1,2,2);
 ev_log = log10([H(fin).init_ev]);
 plot(d0(fin), ev_log, 'ks-', 'MarkerFaceColor',[.3 .7 .4], 'MarkerSize', 5); hold on;
-plot([0 340], [-307.65 -307.65], 'r--', 'LineWidth', 1.2);
-text(20, -292, 'IEEE double underflow ($\approx 2.2\times10^{-308}$)', 'FontSize', 7, 'Color', 'r');
-plot(320, -328, 'r^', 'MarkerFaceColor','r', 'MarkerSize', 7.5);
-text(225, -328, 'exact $0$', 'FontSize', 7.5, 'Color', [0.75 0 0]);
-xlim([0 340]); ylim([-345 0]); grid on;
+plot([0 340], [-307.65 -307.65], 'r--', 'LineWidth', 1.1);
+text(12, -290, 'min normal ($\approx 2.2\times10^{-308}$)', 'FontSize', 6.8, 'Color', 'r');
+plot([0 340], [-323.61 -323.61], 'm:', 'LineWidth', 1.1);
+text(12, -338, 'round-to-zero ($2^{-1075}\!\approx\!2.5\times10^{-324}$)', 'FontSize', 6.4, 'Color', [0.6 0 0.6]);
+plot(320, -334, 'r^', 'MarkerFaceColor','r', 'MarkerSize', 7.5);
+text(245, -315, 'exact $0$', 'FontSize', 7.3, 'Color', [0.75 0 0]);
+xlim([0 340]); ylim([-352 0]); grid on;
 xlabel('$t=0$ precision $d_0$');
 ylabel('$\log_{10}\|v^0_\perp\|_\infty$');
 title('(b) initial transverse defect at $t=0$', 'FontSize', 8.5);
