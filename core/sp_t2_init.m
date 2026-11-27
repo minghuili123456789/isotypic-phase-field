@@ -1,13 +1,11 @@
 function [U, uf] = sp_t2_init(P, fun, active_par)
 %SP_T2_INIT  Initial channels on [0,L/2)^d for T2 isotypic representation.
 % If active_par is omitted, evaluates fun on the 2^d half-period shift
-% orbits x + g*(L/2) and splits via Walsh-Hadamard butterflies.
-% Note: to avoid floating-point rounding of `x + pi` when evaluating an
-% exact anti-periodic analytic function (e.g. sin(x + 0.37)), the user or
-% caller can evaluate on [0,pi) directly via its exact periodic/anti-periodic
-% symmetry, OR pass a VPA function handle. Here we also support an optional
-% 3rd argument `fun_vpa` (function handle evaluated in 34-digit VPA at t=0
-% only) OR `active_par` (exact anti-periodic analytic init for benchmarks).
+% orbits x + g*(L/2) and splits via Walsh-Hadamard butterflies (general data).
+% If numeric active_par (0-based channel index, e.g. 1 in 1D, 3 in 2D odd-odd,
+% 7 in 3D odd^3) is given, initializes that single analytic parity channel on
+% [0,L/2)^d with exact floating-point zeros in all transverse channels (avoiding
+% O(u_mach) sampling error from floating-point evaluation of x + pi).
 d = P.d; M = P.M; h = P.h; L = P.L; nc = P.nc;
 xh = (0:M-1)'*h;
 switch d

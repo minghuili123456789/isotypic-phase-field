@@ -75,8 +75,15 @@ v = uh;
 for it = 1:200
     vn = lhs.*(base + tau/2*(gfun(v) + S*v));
     dv = O.toPhys(vn - v);
+    if isfield(P,'rep') && strcmp(P.rep,'iso')
+        err_it = max(abs(sp_assemble(dv, P.d, P.M)), [], 'all');
+    elseif isfield(P,'rep') && strcmp(P.rep,'t2')
+        err_it = max(abs(sp_t2_assemble(dv, P.d, P.M)), [], 'all');
+    else
+        err_it = max(abs(dv(:)));
+    end
     v = vn;
-    if max(abs(dv(:))) < tol, break; end
+    if err_it < tol, break; end
 end
 un = v;
 end
