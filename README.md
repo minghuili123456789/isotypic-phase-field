@@ -6,13 +6,13 @@ Official code repository for the manuscript:
 
 ## Overview
 
-Standard Fourier pseudo-spectral schemes (IMEX, ETDRK2/4, Crank–Nicolson, ESP, SAV, SBDF, IMEX-RK, SDC, operator splitting) preserve odd and reflection symmetries in exact arithmetic, yet lose them in floating-point arithmetic due to non-equivariant FFT rounding, collapsing to spurious steady states at a universal breakdown time $T_\ast = \lambda_\perp^{-1}\log(1/\mathbf{u}) + O(1)$.
+Standard Fourier pseudo-spectral schemes (IMEX, ETDRK2/4, Crank–Nicolson, ESP, SAV, SBDF, IMEX-RK, SDC, operator splitting) preserve odd and reflection symmetries in exact arithmetic, yet lose them in floating-point arithmetic due to non-equivariant FFT rounding, collapsing to spurious steady states on a logarithmic breakdown time scale $T_\ast = \lambda_\perp^{-1}\log(1/\mathbf{u}) + O(1)$ whenever an unstable transverse mode is excited.
 
 This repository provides a **non-interventional, drop-in symmetry-channel (isotypic) spectral backend** that:
 - is **algebraically identical** to the standard Fourier pseudo-spectral method on arbitrary non-symmetric data ($10^{-16}\text{--}10^{-15}$ agreement);
-- preserves every reflection, point-inversion ($C_2$), half-period anti-periodic ($\mathcal{T}_2$), and product ($A_{\mathrm R}\times\mathcal{T}_2$) symmetry **bitwise ($D \equiv 0$)** with zero filters, projections, or zero-mode resets;
-- propagates genuine sub-roundoff asymmetries faithfully with relative accuracy down to $\delta = 10^{-60}$ (validated against 120-digit VPA);
-- handles **unknown arbitrary (even irrational) spatial shifts** in 100% pure IEEE double-precision time stepping via $\mathcal{T}_2$ and **CF-ISM**.
+- preserves every reflection, point-inversion ($C_2$), half-period anti-periodic ($\mathcal{T}_2$), and product ($A_{\mathrm R}\times\mathcal{T}_2$) symmetry **exactly ($D \equiv 0$, up to IEEE signed zeros)** with zero filters, projections, or zero-mode resets;
+- propagates genuine sub-roundoff asymmetries faithfully with relative accuracy down to $\delta = 10^{-60}$ in the polynomial channel algebra (validated against 120-digit VPA);
+- handles **unknown off-grid spatial shifts** in 100% pure IEEE double-precision time stepping via $\mathcal{T}_2$ and **CF-ISM** (one-time $t=0$ gauge initialization).
 
 ## Repository Structure
 
