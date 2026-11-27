@@ -111,7 +111,20 @@ for n = 1:40, uh = I_f.step(uh); end
 u_std = O_f.toPhys(uh);
 fprintf('  non-symmetric data (40 steps): |CF-ISM - Fourier| = %.2e\n', max(abs(u_cf_orig - u_std)));
 
-fprintf('\n=== (5) 2D shifted mixed-harmonic & 2D shifted C2 (irrational shifts!) ===\n');
+% Mixed-harmonic constant-perturbation faithfulness regression test (cf_gauge_init)
+fprintf('  mixed-harmonic + delta faithfulness (cf_gauge_init, d0=100):\n');
+th_m = 0.37123456789;
+for p_del = [8, 30]
+    del_d = 10^(-p_del);
+    fm_d = @(x) 0.5*(sin(x+th_m)+sin(4*(x+th_m))) + del_d;
+    fm_v = @(x) (vpa(1)/2)*(sin(x+vpa(th_m))+sin(4*(x+vpa(th_m)))) + vpa(10)^(-p_del);
+    [cm_q, Um0] = cf_gauge_init(1, 128, fm_d, fm_v, 100);
+    rel_ev = max(abs(Um0(:,1) - del_d)) / del_d;
+    fprintf('    delta=1e-%d: max|ev - delta|/delta = %.2e (exact double match=%d)\n', ...
+        p_del, rel_ev, isequal(Um0(:,1), repmat(del_d, size(Um0,1), 1)));
+end
+
+fprintf('\n=== (5) 2D shifted mixed-harmonic & 2D shifted C2 (off-grid shifts!) ===\n');
 sh1 = 0.37123456; sh2 = 0.71828182;
 % 2D odd-odd mixed harmonic: (sin(x+sh1)+0.5*sin(4*(x+sh1))) * (sin(y+sh2)+0.5*sin(4*(y+sh2)))
 N2 = 64; M2 = N2/2;
@@ -142,93 +155,15 @@ fprintf('  2D shifted C2 (d0=320, 200 ETDRK2 steps): c_err=(%.1e, %.1e mod pi/3)
 
 % -------- Helper functions --------
 function [c_q, U0] = cf_init_1d(f_dbl, f_vpa, N, dig)
-% Intrinsic translational gauge fixing (no knowledge of symmetry, no zeroing!)
-M = N/2; h = 2*pi/N; xf = (0:N-1)'*h;
-u = f_dbl(xf); uh = fft(u);
-[~, idx] = min(real(ifft(uh.^2))/N);
-c = (idx - 1)*h/2;
-% Coarse double Newton on physical oddness J(c) = 0.5 sum (f(c+x)+f(c-x))^2
-Mc = min(32, M); xc = (1:Mc-1)'*pi/Mc;
-eps_fd = 1e-7;
-for it = 1:6
-    r = f_dbl(c + xc) + f_dbl(c - xc);
-    dr = (f_dbl(c + eps_fd + xc) + f_dbl(c + eps_fd - xc) - (f_dbl(c - eps_fd + xc) + f_dbl(c - eps_fd - xc)))/(2*eps_fd);
-    denom = dr'*dr; if denom < 1e-30, break; end
-    dc = -(dr'*r)/denom; c = c + dc;
-    if abs(dc) < 1e-14, break; end
-end
-% Map c to [-pi/2, pi/2) (canonical representative mod pi)
-c = mod(c + pi/2, pi) - pi/2;
-% Extended-precision Gauss-Newton polish on Mc points (at t=0 ONLY!)
-digits(dig);
-c_q = vpa(c); xc_q = (1:Mc-1)'*vpa(pi)/Mc;
-eps_q = vpa(10)^(-floor(dig/2));
-for it = 1:5
-    r = f_vpa(c_q + xc_q) + f_vpa(c_q - xc_q);
-    dr = (f_vpa(c_q + eps_q + xc_q) + f_vpa(c_q + eps_q - xc_q) - (f_vpa(c_q - eps_q + xc_q) + f_vpa(c_q - eps_q - xc_q)))/(2*eps_q);
-    denom = sum(dr.^2); if double(denom) < 1e-30, break; end
-    dc = -sum(dr.*r)/denom; c_q = c_q + dc;
-    if double(abs(dc)) < 10^(-(dig-4)), break; end
-end
-% Evaluate channels on fundamental grid [0, pi] in extended precision -> round to double
-xh_q = (0:M)' * (2*vpa(pi)/N);
-vp = f_vpa(c_q + xh_q); vm = f_vpa(c_q - xh_q);
-ev = double((vp + vm)/2); od = double((vp - vm)/2);
-od([1 end]) = 0;   % structural boundary non-DOFs of DST-I
-U0 = [ev, od];
+[c_q, U0] = cf_gauge_init(1, N, f_dbl, f_vpa, dig);
 end
 
 function [c_q, U0] = cf_init_2d(f_dbl, f_vpa, N, dig)
-% 2D reflection-odd gauge fixing along x and y separately
-M = N/2; h = 2*pi/N; x1 = (0:N-1)'*h; [X,Y] = ndgrid(x1,x1);
-U = f_dbl(X,Y);
-% 1D auto-convolution summed over other axis
-Ax = sum(real(ifft(fft(U,[],1).^2,[],1)), 2); [~,ix] = min(Ax); cx = (ix-1)*h/2;
-Ay = sum(real(ifft(fft(U,[],2).^2,[],2)), 1); [~,iy] = min(Ay); cy = (iy-1)*h/2;
-cx = mod(cx+pi/2,pi)-pi/2; cy = mod(cy+pi/2,pi)-pi/2;
-digits(dig);
-c_q = [vpa(cx); vpa(cy)];
-Mc = 12; xc = (1:Mc-1)'*vpa(pi)/Mc; [Xc,Yc] = ndgrid(xc,xc);
-Xc = Xc(:); Yc = Yc(:);
-eps_q = vpa(10)^(-floor(dig/2));
-for it = 1:6
-    rx = f_vpa(c_q(1)+Xc, c_q(2)+Yc) + f_vpa(c_q(1)-Xc, c_q(2)+Yc);
-    ry = f_vpa(c_q(1)+Xc, c_q(2)+Yc) + f_vpa(c_q(1)+Xc, c_q(2)-Yc);
-    drx = (f_vpa(c_q(1)+eps_q+Xc, c_q(2)+Yc) + f_vpa(c_q(1)+eps_q-Xc, c_q(2)+Yc) ...
-         - f_vpa(c_q(1)-eps_q+Xc, c_q(2)+Yc) - f_vpa(c_q(1)-eps_q-Xc, c_q(2)+Yc))/(2*eps_q);
-    dry = (f_vpa(c_q(1)+Xc, c_q(2)+eps_q+Yc) + f_vpa(c_q(1)+Xc, c_q(2)+eps_q-Yc) ...
-         - f_vpa(c_q(1)+Xc, c_q(2)-eps_q+Yc) - f_vpa(c_q(1)+Xc, c_q(2)-eps_q-Yc))/(2*eps_q);
-    dc1 = -sum(drx.*rx)/sum(drx.^2); dc2 = -sum(dry.*ry)/sum(dry.^2);
-    c_q = c_q + [dc1; dc2];
-    if double(max(abs([dc1 dc2]))) < 10^(-(dig-4)), break; end
-end
-U0 = eval_iso_2d_vpa(f_vpa, c_q, N);
+[c_q, U0] = cf_gauge_init(2, N, f_dbl, f_vpa, dig, 'refl');
 end
 
 function [c_q, U0] = cf_init_2d_pt(f_dbl, f_vpa, N, dig)
-% 2D point-reflection (C2) gauge fixing via 2D auto-convolution + Gauss-Newton
-M = N/2; h = 2*pi/N; x1 = (0:N-1)'*h; [X,Y] = ndgrid(x1,x1);
-U = f_dbl(X,Y);
-A = real(ifftn(fftn(U).^2));
-[~, idx] = min(A(:)); [ix, iy] = ind2sub([N N], idx);
-cx = mod((ix-1)*h/2 + pi/2, pi) - pi/2;
-cy = mod((iy-1)*h/2 + pi/2, pi) - pi/2;
-digits(dig); c_q = [vpa(cx); vpa(cy)];
-Mc = 10; xc = (1:Mc-1)'*vpa(pi)/Mc; [Xc,Yc] = ndgrid(xc, [xc; -xc]);
-Xc = Xc(:); Yc = Yc(:);
-eps_q = vpa(10)^(-floor(dig/2));
-for it = 1:7
-    r = f_vpa(c_q(1)+Xc, c_q(2)+Yc) + f_vpa(c_q(1)-Xc, c_q(2)-Yc);
-    J1 = (f_vpa(c_q(1)+eps_q+Xc, c_q(2)+Yc) + f_vpa(c_q(1)+eps_q-Xc, c_q(2)-Yc) ...
-        - f_vpa(c_q(1)-eps_q+Xc, c_q(2)+Yc) - f_vpa(c_q(1)-eps_q-Xc, c_q(2)-Yc))/(2*eps_q);
-    J2 = (f_vpa(c_q(1)+Xc, c_q(2)+eps_q+Yc) + f_vpa(c_q(1)-Xc, c_q(2)+eps_q-Yc) ...
-        - f_vpa(c_q(1)+Xc, c_q(2)-eps_q+Yc) - f_vpa(c_q(1)-Xc, c_q(2)-eps_q-Yc))/(2*eps_q);
-    J = [J1, J2];
-    dc = -(J.'*J) \ (J.'*r);
-    c_q = c_q + dc;
-    if double(max(abs(dc))) < 10^(-(dig-4)), break; end
-end
-U0 = eval_iso_2d_vpa(f_vpa, c_q, N);
+[c_q, U0] = cf_gauge_init(2, N, f_dbl, f_vpa, dig, 'point');
 end
 
 function U0 = eval_iso_2d_vpa(f_vpa, c_q, N)
