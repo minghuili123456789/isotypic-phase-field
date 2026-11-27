@@ -14,11 +14,12 @@ if d == 1
     [~, idx] = min(real(ifft(uh.^2))/N);
     c = mod((idx - 1)*h/2 + pi/2, pi) - pi/2;
     Mc = min(32, M); xc = (1:Mc-1)'*pi/Mc;
-    % Double Gauss-Newton
+    % Double Gauss-Newton on mean-centred alias-free oddness residual
     eps_fd = 1e-7;
     for it = 1:8
-        r = f_dbl(c + xc) + f_dbl(c - xc);
+        r = f_dbl(c + xc) + f_dbl(c - xc); r = r - mean(r);
         dr = (f_dbl(c+eps_fd+xc)+f_dbl(c+eps_fd-xc)-f_dbl(c-eps_fd+xc)-f_dbl(c-eps_fd-xc))/(2*eps_fd);
+        dr = dr - mean(dr);
         den = dr'*dr; if den < 1e-30, break; end
         dc = -(dr'*r)/den; c = c + dc;
         if abs(dc) < 1e-14, break; end
@@ -29,8 +30,9 @@ if d == 1
     c_q = vpa(c); xc_q = (1:Mc-1)'*vpa(pi)/Mc;
     eps_q = vpa(10)^(-floor(dig/2));
     for it = 1:8
-        r = f_vpa(c_q + xc_q) + f_vpa(c_q - xc_q);
+        r = f_vpa(c_q + xc_q) + f_vpa(c_q - xc_q); r = r - sum(r)/numel(r);
         dr = (f_vpa(c_q+eps_q+xc_q)+f_vpa(c_q+eps_q-xc_q)-f_vpa(c_q-eps_q+xc_q)-f_vpa(c_q-eps_q-xc_q))/(2*eps_q);
+        dr = dr - sum(dr)/numel(dr);
         den = sum(dr.^2); if double(den) < 1e-30, break; end
         dc = -sum(dr.*r)/den; c_q = c_q + dc;
         if double(abs(dc)) < 10^(-(dig-6)), break; end
@@ -50,10 +52,11 @@ elseif d == 2
         Mc = 10; xc = (1:Mc-1)'*pi/Mc; [Xc,Yc] = ndgrid(xc,xc); Xc=Xc(:); Yc=Yc(:);
         eps_fd = 1e-7;
         for it = 1:6
-            rx = f_dbl(cx+Xc,cy+Yc)+f_dbl(cx-Xc,cy+Yc);
-            ry = f_dbl(cx+Xc,cy+Yc)+f_dbl(cx+Xc,cy-Yc);
+            rx = f_dbl(cx+Xc,cy+Yc)+f_dbl(cx-Xc,cy+Yc); rx = rx - mean(rx);
+            ry = f_dbl(cx+Xc,cy+Yc)+f_dbl(cx+Xc,cy-Yc); ry = ry - mean(ry);
             drx = (f_dbl(cx+eps_fd+Xc,cy+Yc)+f_dbl(cx+eps_fd-Xc,cy+Yc)-f_dbl(cx-eps_fd+Xc,cy+Yc)-f_dbl(cx-eps_fd-Xc,cy+Yc))/(2*eps_fd);
             dry = (f_dbl(cx+Xc,cy+eps_fd+Yc)+f_dbl(cx+Xc,cy+eps_fd-Yc)-f_dbl(cx+Xc,cy-eps_fd+Yc)-f_dbl(cx+Xc,cy-eps_fd-Yc))/(2*eps_fd);
+            drx = drx - mean(drx); dry = dry - mean(dry);
             cx = cx - (drx'*rx)/(drx'*drx + 1e-30);
             cy = cy - (dry'*ry)/(dry'*dry + 1e-30);
         end
@@ -61,10 +64,11 @@ elseif d == 2
         xc_q = (1:Mc-1)'*vpa(pi)/Mc; [Xq,Yq] = ndgrid(xc_q,xc_q); Xq=Xq(:); Yq=Yq(:);
         eps_q = vpa(10)^(-floor(dig/2));
         for it = 1:8
-            rx = f_vpa(c_q(1)+Xq,c_q(2)+Yq)+f_vpa(c_q(1)-Xq,c_q(2)+Yq);
-            ry = f_vpa(c_q(1)+Xq,c_q(2)+Yq)+f_vpa(c_q(1)+Xq,c_q(2)-Yq);
+            rx = f_vpa(c_q(1)+Xq,c_q(2)+Yq)+f_vpa(c_q(1)-Xq,c_q(2)+Yq); rx = rx - sum(rx)/numel(rx);
+            ry = f_vpa(c_q(1)+Xq,c_q(2)+Yq)+f_vpa(c_q(1)+Xq,c_q(2)-Yq); ry = ry - sum(ry)/numel(ry);
             drx = (f_vpa(c_q(1)+eps_q+Xq,c_q(2)+Yq)+f_vpa(c_q(1)+eps_q-Xq,c_q(2)+Yq)-f_vpa(c_q(1)-eps_q+Xq,c_q(2)+Yq)-f_vpa(c_q(1)-eps_q-Xq,c_q(2)+Yq))/(2*eps_q);
             dry = (f_vpa(c_q(1)+Xq,c_q(2)+eps_q+Yq)+f_vpa(c_q(1)+Xq,c_q(2)+eps_q-Yq)-f_vpa(c_q(1)+Xq,c_q(2)-eps_q+Yq)-f_vpa(c_q(1)+Xq,c_q(2)-eps_q-Yq))/(2*eps_q);
+            drx = drx - sum(drx)/numel(drx); dry = dry - sum(dry)/numel(dry);
             dc1 = -sum(drx.*rx)/sum(drx.^2); dc2 = -sum(dry.*ry)/sum(dry.^2);
             c_q = c_q + [dc1; dc2];
             if double(max(abs([dc1 dc2]))) < 10^(-(dig-6)), break; end
@@ -76,9 +80,10 @@ elseif d == 2
         Mc = 8; xc_q = (1:Mc-1)'*vpa(pi)/Mc; [Xq,Yq] = ndgrid(xc_q, [xc_q; -xc_q]); Xq=Xq(:); Yq=Yq(:);
         eps_q = vpa(10)^(-floor(dig/2));
         for it = 1:9
-            r = f_vpa(c_q(1)+Xq,c_q(2)+Yq)+f_vpa(c_q(1)-Xq,c_q(2)-Yq);
+            r = f_vpa(c_q(1)+Xq,c_q(2)+Yq)+f_vpa(c_q(1)-Xq,c_q(2)-Yq); r = r - sum(r)/numel(r);
             J1 = (f_vpa(c_q(1)+eps_q+Xq,c_q(2)+Yq)+f_vpa(c_q(1)+eps_q-Xq,c_q(2)-Yq)-f_vpa(c_q(1)-eps_q+Xq,c_q(2)+Yq)-f_vpa(c_q(1)-eps_q-Xq,c_q(2)-Yq))/(2*eps_q);
             J2 = (f_vpa(c_q(1)+Xq,c_q(2)+eps_q+Yq)+f_vpa(c_q(1)-Xq,c_q(2)+eps_q-Yq)-f_vpa(c_q(1)+Xq,c_q(2)-eps_q+Yq)-f_vpa(c_q(1)-Xq,c_q(2)-eps_q-Yq))/(2*eps_q);
+            J1 = J1 - sum(J1)/numel(J1); J2 = J2 - sum(J2)/numel(J2);
             J = [J1, J2]; dc = -(J.'*J)\(J.'*r); c_q = c_q + dc;
             if double(max(abs(dc))) < 10^(-(dig-6)), break; end
         end
