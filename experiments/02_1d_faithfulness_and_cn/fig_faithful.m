@@ -36,7 +36,7 @@ for v = 1:4
     plot(ax1, -log10(d), Tp, [mk{v} '-'], 'Color', cols4(v,:), 'MarkerSize', 4.2, 'LineWidth', 1.1);
 end
 plot(ax1, [0 205],[500 500],'k:','HandleVisibility','off');
-text(ax1, 45, 513, '$\infty$ (no breaking)', 'FontSize', 6.5);
+text(ax1, 30, 512, 'not reached by $T=400$', 'FontSize', 6.3);
 xlim([0 205]); ylim([0 585]); grid on;
 xlabel('$-\log_{10}\delta$','FontSize',9); ylabel('$T_\ast$','FontSize',9);
 legend(names,'Location','southeast','FontSize',6.0);

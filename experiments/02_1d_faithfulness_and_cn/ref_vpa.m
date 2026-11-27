@@ -2,26 +2,29 @@
 addpath(fullfile(fileparts(mfilename('fullpath')),'..','..','core'));
 if ~exist(fullfile(fileparts(mfilename('fullpath')),'..','..','results'),'dir'), mkdir(fullfile(fileparts(mfilename('fullpath')),'..','..','results')); end
 if ~exist(fullfile(fileparts(mfilename('fullpath')),'..','..','figs'),'dir'), mkdir(fullfile(fileparts(mfilename('fullpath')),'..','..','figs')); end
-% Independent high-precision reference (variable-precision arithmetic, 60
-% digits) for the faithfulness test, kappa=1, u0 = sin x + delta, N=32,
-% ETDRK2 with S=1, tau=0.05.  Compares D(t)=max|even part| with the
-% isotypic double-precision solver.
+% Independent 120-digit variable-precision arithmetic (VPA) reference for the
+% faithfulness test: kappa=1, u0 = sin x + delta, N=32, ETDRK2 with S=1, tau=1/20.
+% All constants (pi, tau=1/20, delta=10^-p, DFT matrix, ETD multipliers) are
+% constructed symbolically in 120-digit arithmetic (zero double-precision input bias).
 addpath(fileparts(mfilename('fullpath')));
 res = fullfile(fileparts(mfilename('fullpath')),'..','..','results');
 digits(120);
-N = 32; tau = 0.05; T = 120; S = 1; dels = [1e-10 1e-30 1e-60];
+N = 32; tau = 0.05; tau_v = vpa(1)/20; T = 120; S = 1;
+exps = [10 30 60]; dels = 10.^(-exps);
 nst = round(T/tau); nout = round(0.5/tau);
 k = [0:N/2, -N/2+1:-1]';
 j = (0:N-1)';
-jv = vpa(j); Fv = exp(-1i*2*vpa(pi)*(jv*jv.')/N);   % DFT matrix in VPA
+jv = vpa(j); kv = vpa(k);
+Fv = exp(-1i*2*vpa(pi)*(jv*jv.')/N);   % exact 120-digit DFT matrix
 Fiv = conj(Fv)/N;
-Lk = k.^2 + S; z = -tau*Lk;
-E = exp(vpa(z)); Q1 = (exp(vpa(z))-1)./vpa(z)*tau;
-Q2 = (exp(vpa(z))-1-vpa(z))./vpa(z).^2*tau;
-x = vpa(2*pi)*j/N;
+Lk_v = kv.^2 + vpa(S); zv = -tau_v*Lk_v;
+E = exp(zv); Q1 = (E - 1)./zv * tau_v;
+Q2 = (E - 1 - zv)./zv.^2 * tau_v;
+x = 2*vpa(pi)*jv/N;
 ref = struct;
-for q = 1:numel(dels)
-    u = sin(x) + vpa(dels(q));
+for q = 1:numel(exps)
+    del_v = vpa(10)^(-exps(q));
+    u = sin(x) + del_v;
     uh = Fv*u; Dt = []; tt = [];
     Nf = @(uh) Fv*real_(2*(Fiv*uh) - (Fiv*uh).^3);
     for n = 0:nst
@@ -46,7 +49,7 @@ for q = 1:numel(dels)
     ref(q).Dfou = R.D';
     lin = ref(q).D < 1e-2;
     rel = max(abs(ref(q).Diso(lin) - ref(q).D(lin))./ref(q).D(lin));
-    fprintf('delta=%g: max rel diff iso vs vpa = %.2e ; fourier vs vpa = %.2e\n', dels(q), rel, ...
+    fprintf('delta=1e-%d: max rel diff iso vs 120-digit VPA = %.2e ; fourier vs VPA = %.2e\n', exps(q), rel, ...
         max(abs(ref(q).Dfou(lin) - ref(q).D(lin))./ref(q).D(lin)));
 end
 save(fullfile(res,'ref_vpa.mat'),'ref');
@@ -54,4 +57,3 @@ save(fullfile(res,'ref_vpa.mat'),'ref');
 function y = real_(y)
 y = real(y);
 end
-
